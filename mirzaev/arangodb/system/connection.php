@@ -174,4 +174,28 @@ final class connection
             default => throw new exception("Свойство \"$name\" не найдено", 404)
         };
     }
+
+    /**
+     * Проверить свойство на инициализированность
+     *
+     * @param mixed $name Название
+     */
+    public function __isset(string $name): bool
+    {
+        return match ($name) {
+            'adress', 'endpoint' => isset($this->adress),
+            'storage', 'database', 'db' => isset($this->storage),
+            'auth' => isset($this->auth),
+            'name' => isset($this->name),
+            'password' => isset($this->password),
+            'connection' => isset($this->connection),
+            'timeout_connect' => isset($this->timeout_connect),
+            'timeout_request' => isset($this->timeout_request),
+            'reconnect' => isset($this->reconnect),
+            'create' => isset($this->create),
+            'update', 'policy' => isset($this->update),
+            'session' => isset($this->session),
+            default => throw new exception("Свойство \"$name\" не найдено", 404)
+        };
+    }
 }
