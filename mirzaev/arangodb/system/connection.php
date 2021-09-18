@@ -92,18 +92,18 @@ final class connection
     public function __construct(array $settings = null)
     {
         // Запись
-        $this->__set('adress', $settings['adress'] ?? $settings['endpoint'] ?? null);
-        $this->__set('storage', $settings['storage'] ?? $settings['database'] ?? null);
-        $this->__set('auth', $settings['auth'] ?? null);
-        $this->__set('name', $settings['name'] ?? null);
-        $this->__set('password', $settings['password'] ?? null);
-        $this->__set('connection', $settings['connection'] ?? null);
-        $this->__set('timeout_connect', $settings['timeout_connect'] ?? null);
-        $this->__set('timeout_request', $settings['timeout_request'] ?? null);
-        $this->__set('reconnect', $settings['reconnect'] ?? null);
-        $this->__set('create', $settings['create'] ?? null);
-        $this->__set('update', $settings['update'] ?? $settings['policy'] ?? null);
-        $this->__set('journal', $settings['journal'] ?? null);
+        @$this->__set('adress', $settings['adress'] ?? $settings['endpoint']);
+        @$this->__set('storage', $settings['storage'] ?? $settings['database']);
+        @$this->__set('auth', $settings['auth']);
+        @$this->__set('name', $settings['name']);
+        @$this->__set('password', $settings['password']);
+        @$this->__set('connection', $settings['connection']);
+        @$this->__set('timeout_connect', $settings['timeout_connect']);
+        @$this->__set('timeout_request', $settings['timeout_request']);
+        @$this->__set('reconnect', $settings['reconnect']);
+        @$this->__set('create', $settings['create']);
+        @$this->__set('update', $settings['update'] ?? $settings['policy']);
+        @$this->__set('journal', $settings['journal']);
 
         if ($this->journal) {
             // Запрос на активацию журналирования
