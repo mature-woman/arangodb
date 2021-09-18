@@ -1,0 +1,35 @@
+{
+    "name": "mirzaev/arangodb",
+    "description": "Реализация управления хранилищем данных ArangoDB",
+    "keywords": [
+        "ArangoDB"
+    ],
+    "type": "library",
+    "license": "WTFPL",
+    "homepage": "https://git.hood.su/mirzaev/arangodb",
+    "authors": [
+        {
+            "name": "Arsen Mirzaev Tatyano-Muradovich",
+            "email": "arsen@mirzaev.sexy",
+            "homepage": "https://mirzaev.sexy",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0.0",
+        "triagens/arangodb": "~3.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "mirzaev\\arangodb\\": "mirzaev/arangodb/system"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "mirzaev\\arangodb\\tests\\": "mirzaev/arangodb/tests"
+        }
+    }
+}
