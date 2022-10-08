@@ -8,6 +8,8 @@ use mirzaev\arangodb\terminal;
 
 use ArangoDBClient\Connection as _connection;
 use ArangoDBClient\Collection as _collection;
+use ArangoDBClient\Statement as _statement;
+use ArangoDBClient\Document as _document;
 use ArangoDBClient\CollectionHandler as _collection_handler;
 
 /**
@@ -21,63 +23,95 @@ class collection
     /**
      * Инициализация
      *
-     * @param _connection $connection Инстанция соединения
+     * @param _connection $session Сессия соединения с базой данных
      * @param string $name Название
      * @param bool $edge Это ребро? (иначе: вершина)
      *
-     * @return string|null Идентификатор
+     * @return string|null Идентификатор коллекции
      */
-    public static function init(_connection $connection, string $name, bool $edge = false): ?string
+    public static function init(_connection $session, string $name, bool $edge = false): ?string
     {
         // Инициализация
-        $collections = new _collection_handler($connection);
+        $collections = new _collection_handler($session);
 
         if (!$collections->has($name)) {
-            // Коллекция не найдена
+            // Не найдана коллекция
 
             // Запись в вывод
             terminal::write("Коллекция \"$name\" не найдена");
 
-            // Инициализация
-            $collection = new _collection();
-
-            // Настройка
-            $collection->setName($name);
-            $collection->setType($edge ? 'edge' : 'document');
-
             // Запись коллекции на сервер и его ответ в буфер возврата
-            $id = $collections->create($name);
+            $id = $collections->create($name, ['type' => $edge ? _collection::TYPE_EDGE : _collection::TYPE_DOCUMENT]);
 
             if ($collections->has($name)) {
                 // Коллекция найдена (записана)
 
                 // Запись в вывод
-                terminal::write("Создана коллекция \"$name\"");
+                terminal::write("Создана коллекция \"$name\" с типом " . ($edge ? 'ребро' : 'документ'));
 
                 // Возврат идентификатора коллекции
                 return $id;
             }
+        } else {
+            // Найдена коллекция
+
+            // Возврат идентификатора коллекции
+            return $name;
         }
+
+        return null;
     }
 
     /**
      * Поиск
      *
-     * @param _connection $connection Соединение
-     * @param string $collection Название
-     * @param array $condition Условия
+     * @param _connection $session Сессия соединения с базой данных
+     * @param string $query AQL-запрос
      *
-     * @return array|null Коллекция, если найдена
+     * @return _document|null Инстанция документа
      */
-    public static function search(_connection $connection, string $name, array $condition): ?array
+    public static function search(_connection $session, string $query): ?_document
+    {
+        // Поиск журнала
+        $journal = (new _statement(
+            $session,
+            [
+                'query' => $query,
+                "batchSize" => 1000,
+                "sanitize"  => true
+            ]
+        ))->execute();
+
+        // Инициализация буфера вывода
+        $buffer = [];
+
+        foreach ($journal as $key => $value) {
+            $buffer[$key] = $value;
+        }
+
+        return $buffer[0] ?? null;
+    }
+
+    /**
+     * Очистка
+     *
+     * @param _connection $session Сессия соединения с базой данных
+     * @param string $name Название
+     *
+     * @return bool Статус выполнения
+     */
+    public static function truncate(_connection $session, string $name): bool
     {
         // Инициализация
-        $collections = new _collection_handler($connection);
+        $collections = new _collection_handler($session);
 
         if ($collections->has($name)) {
-            // Коллекция найдена
+            // Найдена коллекция
 
-            return $collections->byExample($name, $condition)->getAll();
+            // Очистка
+            return $collections->truncate($name);
         }
+
+        return false;
     }
 }

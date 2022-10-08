@@ -138,15 +138,16 @@ final class connection
         match ($name) {
             'adress', 'endpoint' => $this->adress = $value ?? throw new exception("Свойство \"$name\" не может быть пустым", 500),
             'storage', 'database', 'db' => $this->storage = $value ?? throw new exception("Свойство \"$name\" не может быть пустым", 500),
-            'auth' => $this->auth = $value,
-            'name' => $this->name = $value,
-            'password' => $this->password = $value,
-            'connection' => $this->connection = $value,
-            'timeout_connect' => $this->timeout_connect = $value,
-            'timeout_request' => $this->timeout_request = $value,
-            'reconnect' => $this->reconnect = $value,
-            'create' => $this->create = $value,
-            'update', 'policy' => $this->update = $value,
+            'auth' => !$value ?: $this->auth = $value,
+            'name' => !$value ?: $this->name = $value,
+            'password' => !$value ?: $this->password = $value,
+            'connection' => !$value ?: $this->connection = $value,
+            'timeout_connect' => !$value ?: $this->timeout_connect = $value,
+            'timeout_request' => !$value ?: $this->timeout_request = $value,
+            'reconnect' => !$value ?: $this->reconnect = $value,
+            'create' => !$value ?: $this->create = $value,
+            'update', 'policy' => !$value ?: $this->update = $value,
+            'journal' => !$value ?: $this->journal = $value,
             default => throw new exception("Свойство \"$name\" не найдено", 404)
         };
     }
@@ -171,6 +172,7 @@ final class connection
             'create' => $this->create,
             'update', 'policy' => $this->update,
             'session' => $this->session,
+            'journal' => $this->journal,
             default => throw new exception("Свойство \"$name\" не найдено", 404)
         };
     }
@@ -195,6 +197,7 @@ final class connection
             'create' => isset($this->create),
             'update', 'policy' => isset($this->update),
             'session' => isset($this->session),
+            'journal' => isset($this->journal),
             default => throw new exception("Свойство \"$name\" не найдено", 404)
         };
     }
