@@ -28,10 +28,11 @@ class document
      * @param ?array $data Данные
      * @param ?array $metadata Метаданные
      * @param bool $check Проверка на запись в базу данных
+     * @param ?terminal $terminal Инстанция терминала
      *
      * @return string|null Идентификатор
      */
-    public static function write(_connection $session, string $collection, ?array $data = null, ?array $metadata = null, bool $check = true): ?string
+    public static function write(_connection $session, string $collection, ?array $data = null, ?array $metadata = null, bool $check = true, ?terminal $terminal = null): ?string
     {
         // Инициализация коллекции
         collection::init($session, $collection, isset($data['_from'], $data['_to']));
@@ -71,11 +72,11 @@ class document
         // Запись на сервер и его ответ в буфер возврата
         $id = isset($_from, $_to) ? $documents->saveEdge($collection, $_from, $_to, $document) : $documents->insert($collection, $document);
 
-        if ($check && $documents->has($collection, $id)) {
+        if ($check && $terminal instanceof terminal && $documents->has($collection, $id)) {
             // Документ записан
 
             // Запись в вывод
-            terminal::write("В коллекции \"$collection\" создан документ \"$id\"");
+            $terminal::write("В коллекции \"$collection\" создан документ \"$id\"");
         }
 
         // Возврат идентификатора коллекции

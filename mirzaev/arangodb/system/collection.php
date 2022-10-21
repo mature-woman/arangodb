@@ -25,11 +25,12 @@ class collection
      *
      * @param _connection $session Сессия соединения с базой данных
      * @param string $name Название
-     * @param bool $edge Это ребро? (иначе: вершина)
+     * @param bool $edge Обрабатывать как ребро? (иначе: вершина)
+     * @param ?terminal $terminal Инстанция терминала
      *
      * @return string|null Идентификатор коллекции
      */
-    public static function init(_connection $session, string $name, bool $edge = false): ?string
+    public static function init(_connection $session, string $name, bool $edge = false, ?terminal $terminal = null): ?string
     {
         // Инициализация
         $collections = new _collection_handler($session);
@@ -38,7 +39,7 @@ class collection
             // Не найдана коллекция
 
             // Запись в вывод
-            terminal::write("Коллекция \"$name\" не найдена");
+            if ($terminal instanceof terminal) $terminal::write("Коллекция \"$name\" не найдена");
 
             // Запись коллекции на сервер и его ответ в буфер возврата
             $id = $collections->create($name, ['type' => $edge ? _collection::TYPE_EDGE : _collection::TYPE_DOCUMENT]);
@@ -47,7 +48,7 @@ class collection
                 // Коллекция найдена (записана)
 
                 // Запись в вывод
-                terminal::write("Создана коллекция \"$name\" с типом " . ($edge ? 'ребро' : 'документ'));
+                if ($terminal instanceof terminal) $terminal::write("Создана коллекция \"$name\" с типом " . ($edge ? 'ребро' : 'документ'));
 
                 // Возврат идентификатора коллекции
                 return $id;

@@ -18,14 +18,6 @@ class terminal
      */
     public static function write(string $text): void
     {
-        echo self::generate_prefix() . ' ' . $text . PHP_EOL;
-    }
-
-    /**
-     * Генерация префикса
-     */
-    public static function generate_prefix(): string
-    {
-        return '[' . self::PREFIX . ']';
+        echo sprintf("[%s] $text\n", self::PREFIX);
     }
 }
