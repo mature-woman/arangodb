@@ -72,11 +72,11 @@ class document
         // Запись на сервер и его ответ в буфер возврата
         $id = isset($_from, $_to) ? $documents->saveEdge($collection, $_from, $_to, $document) : $documents->insert($collection, $document);
 
-        if ($check && $terminal instanceof terminal && $documents->has($collection, $id)) {
+        if ($check && $documents->has($collection, $id)) {
             // Документ записан
 
             // Запись в вывод
-            $terminal::write("В коллекции \"$collection\" создан документ \"$id\"");
+            if ($terminal instanceof terminal) $terminal::write("В коллекции \"$collection\" создан документ \"$id\"");
         }
 
         // Возврат идентификатора коллекции
