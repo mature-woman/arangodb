@@ -35,7 +35,7 @@ class document
     public static function write(_connection $session, string $collection, ?array $data = [], ?array $metadata = [], bool $check = true, ?terminal $terminal = null): ?string
     {
         // Инициализация коллекции
-        collection::init($session, $collection, isset($data['_from'], $data['_to']));
+        collection::init($session, $collection, isset($metadata['_from'], $metadata['_to']));
 
         if (isset($metadata['_from'], $metadata['_to'])) {
             // Ребро
