@@ -32,7 +32,7 @@ class document
      *
      * @return string|null Идентификатор
      */
-    public static function write(_connection $session, string $collection, ?array $data = null, ?array $metadata = null, bool $check = true, ?terminal $terminal = null): ?string
+    public static function write(_connection $session, string $collection, ?array $data = [], ?array $metadata = [], bool $check = true, ?terminal $terminal = null): ?string
     {
         // Инициализация коллекции
         collection::init($session, $collection, isset($data['_from'], $data['_to']));
