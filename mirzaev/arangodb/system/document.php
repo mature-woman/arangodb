@@ -73,10 +73,17 @@ class document
         $id = isset($_from, $_to) ? $documents->saveEdge($collection, $_from, $_to, $document) : $documents->insert($collection, $document);
 
         if ($check && $documents->has($collection, $id)) {
-            // Документ записан
+            // Найден записанный документ
 
             // Запись в вывод
             if ($terminal instanceof terminal) $terminal::write("В коллекции \"$collection\" создан документ \"$id\"");
+        } else if ($check) {
+            // Не найден записанный документ
+
+            // Запись в вывод
+            if ($terminal instanceof terminal) $terminal::write("В коллекции \"$collection\" не удалось найти созданный или создать документ");
+
+            return null;
         }
 
         // Возврат идентификатора коллекции
