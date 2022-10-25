@@ -26,18 +26,17 @@ class document
      * @param _connection $session Сессия соединения с базой данных
      * @param string $collection Коллекция
      * @param ?array $data Данные
-     * @param ?array $metadata Метаданные
      * @param bool $check Проверка на запись в базу данных
      * @param ?terminal $terminal Инстанция терминала
      *
      * @return string|null Идентификатор
      */
-    public static function write(_connection $session, string $collection, ?array $data = [], ?array $metadata = [], bool $check = false, ?terminal $terminal = null): ?string
+    public static function write(_connection $session, string $collection, ?array $data = [], bool $check = false, ?terminal $terminal = null): ?string
     {
         // Инициализация коллекции
-        collection::init($session, $collection, isset($metadata['_from'], $metadata['_to']));
+        collection::init($session, $collection, isset($data['_from'], $data['_to']));
 
-        if (isset($metadata['_from'], $metadata['_to'])) {
+        if (isset($data['_from'], $data['_to'])) {
             // Ребро
 
             // Инициализация обработчика рёбер
@@ -47,11 +46,11 @@ class document
             $document = new _edge();
 
             // Инициализация вершин
-            $_from = $metadata['_from'];
-            $_to = $metadata['_to'];
+            $_from = $data['_from'];
+            $_to = $data['_to'];
 
             // Деинициализация из входных данных
-            unset($metadata['_from'], $metadata['_to']);
+            unset($data['_from'], $data['_to']);
         } else {
             // Вершина
 
@@ -62,7 +61,7 @@ class document
             $document = new _document();
         }
 
-        foreach (['data' => $data, 'metadata' => ($metadata ?? []) + ['created' => time()]] as $key => $value) {
+        foreach (['created' => time()] + $data as $key => $value) {
             // Перебор параметров
 
             // Запись в инстанцию документа
@@ -98,7 +97,8 @@ class document
      *
      * @return bool Статус обработки
      */
-    public static function update(_connection $session, _document $document): bool {
+    public static function update(_connection $session, _document $document): bool
+    {
         // Инициализация обработчика вершин
         $documents = new _document_handler($session);
 
