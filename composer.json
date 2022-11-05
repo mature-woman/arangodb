@@ -1,6 +1,7 @@
 {
     "name": "mirzaev/arangodb",
     "description": "Реализация управления хранилищем данных ArangoDB",
+    "readme": "README.md",
     "keywords": [
         "ArangoDB"
     ],
@@ -13,6 +14,17 @@
             "email": "arsen@mirzaev.sexy",
             "homepage": "https://mirzaev.sexy",
             "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "arsen@mirzaev.sexy",
+        "wiki": "https://git.mirzaev.sexy/mirzaev/arangodb/manual",
+        "issues": "https://git.mirzaev.sexy/mirzaev/arangodb/issues"
+    },
+    "funding": [
+        {
+            "type": "funding",
+            "url": "https://fund.mirzaev.sexy"
         }
     ],
     "require": {
