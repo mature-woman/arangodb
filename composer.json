@@ -1,6 +1,6 @@
 {
     "name": "mirzaev/arangodb",
-    "description": "Реализация управления хранилищем данных ArangoDB",
+    "description": "Simple PHP-framework for ArangoDB",
     "readme": "README.md",
     "keywords": [
         "ArangoDB"
