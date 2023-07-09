@@ -69,9 +69,9 @@ class collection
      * @param _connection $session Сессия соединения с базой данных
      * @param string $query AQL-запрос
      *
-     * @return _document|null Инстанция документа
+     * @return _document|array|string|int|null Инстанция документа
      */
-    public static function search(_connection $session, string $query): ?_document
+    public static function search(_connection $session, string $query): _document|string|array|int|null
     {
         // Поиск журнала
         $journal = (new _statement(
@@ -90,7 +90,7 @@ class collection
             $buffer[$key] = $value;
         }
 
-        return $buffer[0] ?? null;
+        return is_array($buffer) && count($buffer) > 1 ? $buffer : $buffer[0] ?? null;
     }
 
     /**
