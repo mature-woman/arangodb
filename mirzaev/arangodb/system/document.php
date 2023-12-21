@@ -20,89 +20,95 @@ use ArangoDBClient\EdgeHandler as _edge_handler;
  */
 class document
 {
-    /**
-     * Записать
-     *
-     * @param _connection $session Сессия соединения с базой данных
-     * @param string $collection Коллекция
-     * @param ?array $data Данные
-     * @param bool $check Проверка на запись в базу данных
-     * @param ?terminal $terminal Инстанция терминала
-     *
-     * @return string|null Идентификатор
-     */
-    public static function write(_connection $session, string $collection, ?array $data = [], bool $check = false, ?terminal $terminal = null): ?string
-    {
-        // Инициализация коллекции
-        collection::init($session, $collection, isset($data['_from'], $data['_to']));
+	/**
+	 * Записать
+	 *
+	 * @param _connection $session Сессия соединения с базой данных
+	 * @param string $collection Коллекция
+	 * @param ?array $data Данные
+	 * @param bool $check Проверка на запись в базу данных
+	 * @param ?terminal $terminal Инстанция терминала
+	 *
+	 * @return string|null Идентификатор
+	 */
+	public static function write(_connection $session, string $collection, ?array $data = [], bool $check = false, ?terminal $terminal = null): ?string
+	{
+		// Инициализация коллекции
+		collection::init($session, $collection, isset($data['_from'], $data['_to']));
 
-        if (isset($data['_from'], $data['_to'])) {
-            // Ребро
+		if (isset($data['_from'], $data['_to'])) {
+			// Ребро
 
-            // Инициализация обработчика рёбер
-            $documents = new _edge_handler($session);
+			// Инициализация обработчика рёбер
+			$documents = new _edge_handler($session);
 
-            // Инициализация ребра
-            $document = new _edge();
+			// Инициализация ребра
+			$document = new _edge();
 
-            // Инициализация вершин
-            $_from = $data['_from'];
-            $_to = $data['_to'];
+			// Инициализация вершин
+			$_from = $data['_from'];
+			$_to = $data['_to'];
 
-            // Деинициализация из входных данных
-            unset($data['_from'], $data['_to']);
-        } else {
-            // Вершина
+			// Деинициализация из входных данных
+			unset($data['_from'], $data['_to']);
+		} else {
+			// Вершина
 
-            // Инициализация обработчика вершин
-            $documents = new _document_handler($session);
+			// Инициализация обработчика вершин
+			$documents = new _document_handler($session);
 
-            // Инициализация вершины
-            $document = new _document();
-        }
+			// Инициализация вершины
+			$document = new _document();
+		}
 
-        foreach (['created' => time()] + $data as $key => $value) {
-            // Перебор параметров
+		// Инициализация даты создания
+		$created = time();
 
-            // Запись в инстанцию документа
-            $document->set($key, $value);
-        }
+		foreach (['created' => $created, 'updated' => $created] + $data as $key => $value) {
+			// Перебор параметров
 
-        // Запись на сервер и его ответ в буфер возврата
-        $id = isset($_from, $_to) ? $documents->saveEdge($collection, $_from, $_to, $document) : $documents->insert($collection, $document);
+			// Запись в инстанцию документа
+			$document->set($key, $value);
+		}
 
-        if ($check && $documents->has($collection, $id)) {
-            // Найден записанный документ
+		// Запись на сервер и его ответ в буфер возврата
+		$id = isset($_from, $_to) ? $documents->saveEdge($collection, $_from, $_to, $document) : $documents->insert($collection, $document);
 
-            // Запись в вывод
-            if ($terminal instanceof terminal) $terminal::write("В коллекции \"$collection\" создан документ \"$id\"");
-        } else if ($check) {
-            // Не найден записанный документ
+		if ($check && $documents->has($collection, $id)) {
+			// Найден записанный документ
 
-            // Запись в вывод
-            if ($terminal instanceof terminal) $terminal::write("В коллекции \"$collection\" не удалось найти созданный или создать документ");
+			// Запись в вывод
+			if ($terminal instanceof terminal) $terminal::write("В коллекции \"$collection\" создан документ \"$id\"");
+		} else if ($check) {
+			// Не найден записанный документ
 
-            return null;
-        }
+			// Запись в вывод
+			if ($terminal instanceof terminal) $terminal::write("В коллекции \"$collection\" не удалось найти созданный или создать документ");
 
-        // Возврат идентификатора коллекции
-        return $id;
-    }
+			return null;
+		}
 
-    /**
-     * Обновить
-     *
-     * @param _connection $session Сессия соединения с базой данных
-     * @param _document $document Инстанция документа вершины
-     *
-     * @return bool Статус обработки
-     */
-    public static function update(_connection $session, _document $document): bool
-    {
-        // Инициализация обработчика вершин
-        $documents = new _document_handler($session);
+		// Возврат идентификатора коллекции
+		return $id;
+	}
 
-        // Запись в базу данных
-        return $documents->update($document);
-    }
+	/**
+	 * Обновить
+	 *
+	 * @param _connection $session Сессия соединения с базой данных
+	 * @param _document $document Инстанция документа вершины
+	 *
+	 * @return bool Статус обработки
+	 */
+	public static function update(_connection $session, _document $document): bool
+	{
+		// Инициализация обработчика вершин
+		$documents = new _document_handler($session);
+
+		// Запись даты обновления в инстанцию документа
+		$document->set('updated', time());
+
+		// Запись в базу данных
+		return $documents->update($document);
+	}
 }
