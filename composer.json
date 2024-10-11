@@ -5,7 +5,7 @@
     "keywords": [
         "ArangoDB"
     ],
-    "type": "library",
+    "type": "framework",
     "license": "WTFPL",
     "homepage": "https://git.hood.su/mirzaev/arangodb",
     "authors": [

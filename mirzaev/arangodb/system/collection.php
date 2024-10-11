@@ -4,122 +4,198 @@ declare(strict_types=1);
 
 namespace mirzaev\arangodb;
 
-use mirzaev\arangodb\terminal;
+// Files of the project
+use mirzaev\arangodb\connection,
+	mirzaev\arangodb\terminal,
+	mirzaev\arangodb\enumerations\collection\type;
 
-use ArangoDBClient\Connection as _connection;
-use ArangoDBClient\Collection as _collection;
-use ArangoDBClient\Statement as _statement;
-use ArangoDBClient\Document as _document;
-use ArangoDBClient\CollectionHandler as _collection_handler;
+// Library for ArangoDB
+use ArangoDBClient\Statement as _statement,
+	ArangoDBClient\Document as _document,
+	ArangoDBClient\CollectionHandler as _collection_handler;
+
+// Built-in libraries
+use exception;
 
 /**
- * Коллекция
+ * Collection
  *
  * @package mirzaev\arangodb
+ *
+ * @license http://www.wtfpl.net/ Do What The Fuck You Want To Public License
  * @author Arsen Mirzaev Tatyano-Muradovich <arsen@mirzaev.sexy>
  */
 class collection
 {
 	/**
-	 * Инициализация
+	 * Initialize a collection
 	 *
-	 * @param _connection $session Сессия соединения с базой данных
-	 * @param string $name Название
-	 * @param bool $edge Обрабатывать как ребро? (иначе: вершина)
+	 * @param string $collection Name of the collection
+	 * @param type $type Type of the collection
 	 * @param ?terminal $terminal Инстанция терминала
+	 * @param array &$errors Registry of errors
 	 *
-	 * @return string|null Идентификатор коллекции
+	 * @return string|null Identifier of the collection
 	 */
-	public static function init(_connection $session, string $name, bool $edge = false, ?terminal $terminal = null): ?string
+	public static function initialize(string $name, type $type = type::document, ?terminal $terminal = null, array &$errors = []): ?string
 	{
-		// Инициализация
-		$collections = new _collection_handler($session);
+		try {
+			// Инициализация
+			$collections = new _collection_handler(connection::$session);
 
-		if (!$collections->has($name)) {
-			// Не найдана коллекция
-
-			// Запись в вывод
-			if ($terminal instanceof terminal) $terminal::write("Коллекция \"$name\" не найдена");
-
-			// Запись коллекции на сервер и его ответ в буфер возврата
-			$id = $collections->create($name, ['type' => $edge ? _collection::TYPE_EDGE : _collection::TYPE_DOCUMENT]);
-
-			if ($collections->has($name)) {
-				// Коллекция найдена (записана)
+			if (!$collections->has($name)) {
+				// Не найдана коллекция
 
 				// Запись в вывод
-				if ($terminal instanceof terminal) $terminal::write("Создана коллекция \"$name\" с типом " . ($edge ? 'ребро' : 'документ'));
+				if ($terminal instanceof terminal) $terminal::write("Not found $type collection: $name");
+
+				// Запись коллекции на сервер и его ответ в буфер возврата
+				$id = $collections->create($name, ['type' => $type->code()]);
+
+				if ($collections->has($name)) {
+					// Коллекция найдена (записана)
+
+					// Запись в вывод
+					if ($terminal instanceof terminal) $terminal::write("Created $type collection: $name");
+
+					// Возврат идентификатора коллекции
+					return $id;
+				}
+			} else {
+				// Найдена коллекция
 
 				// Возврат идентификатора коллекции
-				return $id;
+				return $name;
 			}
-		} else {
-			// Найдена коллекция
-
-			// Возврат идентификатора коллекции
-			return $name;
+		} catch (exception $e) {
+			// Writing to registry of errors
+			$errors[] = [
+				'text' => $e->getMessage(),
+				'file' => $e->getFile(),
+				'line' => $e->getLine(),
+				'stack' => $e->getTrace()
+			];
 		}
 
 		return null;
 	}
 
 	/**
-	 * Поиск
+	 * Execute
 	 *
-	 * @param _connection $session Сессия соединения с базой данных
-	 * @param string $query AQL-запрос
-	 * @param array $binds Binds for query [bind => value]
+	 * @param string $query Query (AQL)
+	 * @param array $parameters Binded parameters for placeholders [placholder => parameter]
+	 * @param array &$errors Registry of errors
 	 *
-	 * @return _document|array|string|int|null Инстанция документа
+	 * @return _document|array|string|int|null Instance of the document
 	 */
-	public static function search(_connection $session, string $query, array $binds = []): _document|string|array|int|null
+	public static function execute(string $query, array $parameters = [], array &$errors = []): _document|string|array|int|null
 	{
-		// Statement instance initialization
-		$instance = new _statement(
-			$session,
-			[
-				'query' => $query,
-				"batchSize" => 1000,
-				"sanitize"  => true
-			]
-		);
+		try {
+			// Statement instance initialization
+			$instance = new _statement(
+				connection::$session,
+				[
+					'query' => $query,
+					"batchSize" => 1000,
+					"sanitize"  => true
+				]
+			);
 
-		// Binds application
-		$instance->bind($binds);
+			// Binds application
+			$instance->bind($parameters);
 
-		// Sending the request
-		$response = $instance->execute();
+			// Sending the request
+			$response = $instance->execute();
 
-		// Инициализация буфера вывода
-		$buffer = [];
+			// Инициализация буфера вывода
+			$buffer = [];
 
-		foreach ($response->getAll() as $key => $value) {
-			$buffer[$key] = $value;
+			foreach ($response->getAll() as $key => $value) {
+				$buffer[$key] = $value;
+			}
+
+			// Exit (success)
+			return is_array($buffer) && count($buffer) > 1 ? $buffer : $buffer[0] ?? null;
+		} catch (exception $e) {
+			// Writing to registry of errors
+			$errors[] = [
+				'text' => $e->getMessage(),
+				'file' => $e->getFile(),
+				'line' => $e->getLine(),
+				'stack' => $e->getTrace()
+			];
 		}
 
-		return is_array($buffer) && count($buffer) > 1 ? $buffer : $buffer[0] ?? null;
+		// Exit (fail)
+		return null;
 	}
 
 	/**
-	 * Очистка
+	 * Truncate
 	 *
-	 * @param _connection $session Сессия соединения с базой данных
-	 * @param string $name Название
+	 * @param string $name Name of the collection
+	 * @param array &$errors Registry of errors
 	 *
 	 * @return bool Статус выполнения
 	 */
-	public static function truncate(_connection $session, string $name): bool
+	public static function truncate(string $collection, array &$errors = []): bool
 	{
-		// Инициализация
-		$collections = new _collection_handler($session);
+		try {
+			// Initizlizing of the collection handler
+			$collections = new _collection_handler(connection::$session);
 
-		if ($collections->has($name)) {
-			// Найдена коллекция
+			if ($collections->has($collection)) {
+				// Fount the collection
 
-			// Очистка
-			return $collections->truncate($name);
+				// Truncate and exit (success)
+				return $collections->truncate($collection);
+			}
+		} catch (exception $e) {
+			// Writing to registry of errors
+			$errors[] = [
+				'text' => $e->getMessage(),
+				'file' => $e->getFile(),
+				'line' => $e->getLine(),
+				'stack' => $e->getTrace()
+			];
 		}
 
+		// Exit (fail)
 		return false;
+	}
+
+	/**
+	 * Count documents in ArangoDB
+	 *
+	 * @param string $collection Name of the collection 
+	 * @param array &$errors Registry of errors
+	 *
+	 * @return int|null Amount of documents in ArangoDB
+	 */
+	public static function count(string $collection, array &$errors = []): ?int
+	{
+		try {
+			// Count and exit (success)
+			return static::execute(
+				<<<'AQL'
+					RETURN LENGTH(@collection)
+				AQL,
+				[
+					'collection' => $collection
+				]
+			);
+		} catch (exception $e) {
+			// Writing to registry of errors
+			$errors[] = [
+				'text' => $e->getMessage(),
+				'file' => $e->getFile(),
+				'line' => $e->getLine(),
+				'stack' => $e->getTrace()
+			];
+		}
+
+		// Exit (fail)
+		return null;
 	}
 }
