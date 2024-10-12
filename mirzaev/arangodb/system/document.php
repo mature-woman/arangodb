@@ -51,7 +51,7 @@ class document
 		bool $check = false,
 		?terminal $terminal = null,
 		array &$errors = []
-	): ?string {
+	): string|null|false {
 		try {
 			// Инициализация коллекции
 			collection::initialize($collection, isset($data['_from'], $data['_to']) ? type::edge : type::document);

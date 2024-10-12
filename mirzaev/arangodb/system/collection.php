@@ -179,10 +179,10 @@ class collection
 			// Count and exit (success)
 			return static::execute(
 				<<<'AQL'
-					RETURN LENGTH(@collection)
+					RETURN LENGTH(@@collection)
 				AQL,
 				[
-					'collection' => $collection
+					'@collection' => $collection
 				]
 			);
 		} catch (exception $e) {
