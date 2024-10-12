@@ -92,6 +92,8 @@ final class connection
 	 * Конструктор
 	 *
 	 * @param array $settings Настройки
+   *
+   * @todo ПЕРЕДЕЛАТЬ ПОЛНОСТЬЮ
 	 */
 	public function __construct(array $settings = null)
 	{
