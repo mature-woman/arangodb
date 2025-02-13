@@ -12,7 +12,8 @@ use mirzaev\arangodb\connection,
 // Library for ArangoDB
 use ArangoDBClient\Statement as _statement,
 	ArangoDBClient\Document as _document,
-	ArangoDBClient\CollectionHandler as _collection_handler;
+	ArangoDBClient\CollectionHandler as _collection_handler,
+	ArangoDBClient\Cursor as cursor;
 
 // Built-in libraries
 use exception;
@@ -85,11 +86,12 @@ class collection
 	 *
 	 * @param string $query Query (AQL)
 	 * @param array $parameters Binded parameters for placeholders [placholder => parameter]
+	 * @param bool $flat Not implement record?
 	 * @param array &$errors Registry of errors
 	 *
 	 * @return _document|array|string|int|null Instance of the document
 	 */
-	public static function execute(string $query, array $parameters = [], array &$errors = []): _document|string|array|int|null
+	public static function execute(string $query, array $parameters = [], bool $flat = false, array &$errors = []): _document|string|array|int|null
 	{
 		try {
 			// Statement instance initialization
@@ -97,8 +99,9 @@ class collection
 				connection::$session,
 				[
 					'query' => $query,
-					"batchSize" => 1000,
-					"sanitize"  => true
+					'batchSize' => 1000,
+					'sanitize' => true,
+					cursor::ENTRY_FLAT => $flat
 				]
 			);
 
